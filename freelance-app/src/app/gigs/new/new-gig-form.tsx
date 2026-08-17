@@ -53,7 +53,7 @@ export function NewGigForm() {
         <p className="text-sm text-destructive">{state.error}</p>
       )}
 
-      <SubmitButton pendingText="Posting...">Post gig</SubmitButton>
+      <SubmitButton pendingText="Posting..." className="w-full">Post gig</SubmitButton>
     </form>
   );
 }

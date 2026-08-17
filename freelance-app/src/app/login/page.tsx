@@ -56,7 +56,7 @@ export default function LoginPage() {
               <p className="text-sm text-destructive">{state.error}</p>
             )}
 
-            <SubmitButton pendingText="Logging in...">Log in</SubmitButton>
+            <SubmitButton pendingText="Logging in..." className="w-full">Log in</SubmitButton>
           </form>
 
           <p className="mt-4 text-center text-sm text-muted-foreground">

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Ticket } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { logout } from "@/app/auth/actions";
@@ -10,10 +11,14 @@ export async function NavBar() {
   } = await supabase.auth.getUser();
 
   return (
-    <header className="border-b">
+    <header className="sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-        <Link href="/" className="font-semibold">
-          GigBoard
+        <Link
+          href="/"
+          className="flex items-center gap-2 font-mono text-sm font-semibold tracking-wide"
+        >
+          <Ticket className="size-4" strokeWidth={2} />
+          GIGBOARD
         </Link>
 
         <nav className="flex items-center gap-3 text-sm">
@@ -26,7 +31,7 @@ export async function NavBar() {
               <Button variant="ghost" asChild size="sm">
                 <Link href="/dashboard">Dashboard</Link>
               </Button>
-              <span className="text-muted-foreground hidden sm:inline">
+              <span className="hidden font-mono text-xs text-muted-foreground sm:inline">
                 {user.email}
               </span>
               <form action={logout}>

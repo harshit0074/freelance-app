@@ -1,55 +1,36 @@
 import Link from "next/link";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import type { Gig, GigStatus } from "@/lib/types";
+import { StatusTag } from "@/components/status-tag";
+import type { Gig } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
-const STATUS_LABEL: Record<GigStatus, string> = {
-  open: "Open",
-  claimed: "Claimed",
-  submitted: "Submitted",
-  approved: "Approved",
-  paid: "Paid",
-};
-
-const STATUS_VARIANT: Record<
-  GigStatus,
-  "default" | "secondary" | "outline"
-> = {
-  open: "default",
-  claimed: "secondary",
-  submitted: "secondary",
-  approved: "outline",
-  paid: "outline",
+const SPINE: Record<Gig["status"], string> = {
+  open: "border-l-status-open",
+  claimed: "border-l-status-claimed",
+  submitted: "border-l-status-submitted",
+  approved: "border-l-status-approved",
+  paid: "border-l-status-paid",
 };
 
 export function GigCard({ gig, href }: { gig: Gig; href: string }) {
   return (
     <Link href={href}>
-      <Card className="transition-colors hover:bg-accent/50">
-        <CardHeader>
-          <div className="flex items-start justify-between gap-2">
-            <CardTitle className="text-base">{gig.title}</CardTitle>
-            <Badge variant={STATUS_VARIANT[gig.status]}>
-              {STATUS_LABEL[gig.status]}
-            </Badge>
-          </div>
-          <CardDescription className="line-clamp-2">
-            {gig.description}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-lg font-semibold">
-            ${gig.price.toFixed(2)}
-          </div>
-        </CardContent>
-      </Card>
+      <div
+        className={cn(
+          "flex flex-col gap-3 rounded-md border border-l-4 bg-card p-4 transition-colors hover:bg-accent/40",
+          SPINE[gig.status]
+        )}
+      >
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="font-medium leading-snug">{gig.title}</h3>
+          <StatusTag status={gig.status} />
+        </div>
+        <p className="line-clamp-2 text-sm text-muted-foreground">
+          {gig.description}
+        </p>
+        <div className="font-mono text-lg font-semibold">
+          ${gig.price.toFixed(2)}
+        </div>
+      </div>
     </Link>
   );
 }

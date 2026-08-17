@@ -1,9 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { FilePlus2, PackageOpen } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { DashboardGigCard } from "@/components/dashboard-gig-card";
 import type { Gig } from "@/lib/types";
 
@@ -52,37 +51,39 @@ export default async function DashboardPage() {
     <div className="mx-auto w-full max-w-3xl px-4 py-12">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">Dashboard</h1>
-          <p className="mt-1 text-muted-foreground">
-            {profile?.full_name ?? user.email} ·{" "}
-            <Badge variant="secondary" className="capitalize">
-              {profile?.role ?? "unknown"}
-            </Badge>
+          <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
+            {profile?.role ?? "unknown"} account
           </p>
+          <h1 className="mt-1 text-2xl font-medium">
+            {profile?.full_name ?? user.email}
+          </h1>
         </div>
         {isCompany && (
           <Button asChild>
-            <Link href="/gigs/new">Post a gig</Link>
+            <Link href="/gigs/new">
+              <FilePlus2 />
+              Post a gig
+            </Link>
           </Button>
         )}
       </div>
 
       {!isCompany && (
-        <Card className="mt-6">
-          <CardContent className="flex items-center justify-between py-4">
-            <span className="text-sm text-muted-foreground">
-              Total earnings
-            </span>
-            <span className="text-xl font-semibold">
-              ${totalEarnings.toFixed(2)}
-            </span>
-          </CardContent>
-        </Card>
+        <div className="mt-6 flex items-center justify-between rounded-md border border-l-4 border-l-status-paid bg-card px-4 py-3">
+          <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
+            Total earnings
+          </span>
+          <span className="font-mono text-xl font-semibold">
+            ${totalEarnings.toFixed(2)}
+          </span>
+        </div>
       )}
 
       {isCompany ? (
         <div className="mt-8">
-          <h2 className="text-lg font-medium">My posted gigs</h2>
+          <h2 className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
+            My posted gigs
+          </h2>
           {gigList.length > 0 ? (
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               {gigList.map((gig) => (
@@ -90,20 +91,23 @@ export default async function DashboardPage() {
               ))}
             </div>
           ) : (
-            <Card className="mt-4">
-              <CardContent className="py-8 text-center text-muted-foreground">
+            <div className="mt-4 flex flex-col items-center gap-3 rounded-md border border-dashed border-border py-16 text-center text-muted-foreground">
+              <PackageOpen className="size-6" strokeWidth={1.5} />
+              <p>
                 You haven&apos;t posted any gigs yet.{" "}
                 <Link href="/gigs/new" className="underline">
                   Post your first one
                 </Link>
                 .
-              </CardContent>
-            </Card>
+              </p>
+            </div>
           )}
         </div>
       ) : (
         <div className="mt-8">
-          <h2 className="text-lg font-medium">My claimed gigs</h2>
+          <h2 className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
+            My claimed gigs
+          </h2>
           {gigList.length > 0 ? (
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               {gigList.map((gig) => (
@@ -115,15 +119,16 @@ export default async function DashboardPage() {
               ))}
             </div>
           ) : (
-            <Card className="mt-4">
-              <CardContent className="py-8 text-center text-muted-foreground">
+            <div className="mt-4 flex flex-col items-center gap-3 rounded-md border border-dashed border-border py-16 text-center text-muted-foreground">
+              <PackageOpen className="size-6" strokeWidth={1.5} />
+              <p>
                 You haven&apos;t claimed any gigs yet.{" "}
                 <Link href="/gigs" className="underline">
                   Browse open gigs
                 </Link>
                 .
-              </CardContent>
-            </Card>
+              </p>
+            </div>
           )}
         </div>
       )}

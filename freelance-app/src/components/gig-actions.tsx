@@ -24,7 +24,7 @@ function ActionForm({
       {state?.error && (
         <p className="text-xs text-destructive">{state.error}</p>
       )}
-      <SubmitButton pendingText={pendingText}>{children}</SubmitButton>
+      <SubmitButton size="sm" pendingText={pendingText}>{children}</SubmitButton>
     </form>
   );
 }

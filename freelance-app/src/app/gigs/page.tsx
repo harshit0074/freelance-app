@@ -1,6 +1,6 @@
+import { Inbox } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { GigCard } from "@/components/gig-card";
-import { Card, CardContent } from "@/components/ui/card";
 import type { Gig } from "@/lib/types";
 
 export default async function GigsPage() {
@@ -14,9 +14,12 @@ export default async function GigsPage() {
 
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-12">
-      <h1 className="text-2xl font-semibold">Open Gigs</h1>
+      <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
+        Open work orders
+      </p>
+      <h1 className="mt-2 text-2xl font-medium">Browse gigs</h1>
       <p className="mt-1 text-muted-foreground">
-        Browse available work. Log in as a freelancer to claim one.
+        Log in as a freelancer to claim one.
       </p>
 
       {gigs && gigs.length > 0 ? (
@@ -26,11 +29,10 @@ export default async function GigsPage() {
           ))}
         </div>
       ) : (
-        <Card className="mt-8">
-          <CardContent className="py-12 text-center text-muted-foreground">
-            No open gigs right now — check back soon.
-          </CardContent>
-        </Card>
+        <div className="mt-8 flex flex-col items-center gap-3 rounded-md border border-dashed border-border py-16 text-center text-muted-foreground">
+          <Inbox className="size-6" strokeWidth={1.5} />
+          <p>No open gigs right now — check back soon.</p>
+        </div>
       )}
     </div>
   );

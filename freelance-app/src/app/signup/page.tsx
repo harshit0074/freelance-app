@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import Link from "next/link";
+import { Building2, User } from "lucide-react";
 import { signup, type AuthResult } from "@/app/auth/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -74,7 +75,7 @@ export default function SignupPage() {
               <p className="text-sm text-destructive">{state.error}</p>
             )}
 
-            <SubmitButton pendingText="Creating account...">
+            <SubmitButton pendingText="Creating account..." className="w-full">
               Sign up
             </SubmitButton>
           </form>
@@ -94,7 +95,8 @@ export default function SignupPage() {
 function RoleSelector() {
   return (
     <div className="grid grid-cols-2 gap-2">
-      <label className="has-[:checked]:border-primary has-[:checked]:bg-accent flex cursor-pointer items-center justify-center rounded-md border p-2 text-sm font-medium">
+      <label className="has-[:checked]:border-primary has-[:checked]:bg-secondary flex cursor-pointer flex-col items-center gap-1.5 rounded-md border border-border p-3 text-sm font-medium transition-colors">
+        <Building2 className="size-4" strokeWidth={1.75} />
         <input
           type="radio"
           name="role"
@@ -104,7 +106,8 @@ function RoleSelector() {
         />
         Company
       </label>
-      <label className="has-[:checked]:border-primary has-[:checked]:bg-accent flex cursor-pointer items-center justify-center rounded-md border p-2 text-sm font-medium">
+      <label className="has-[:checked]:border-primary has-[:checked]:bg-secondary flex cursor-pointer flex-col items-center gap-1.5 rounded-md border border-border p-3 text-sm font-medium transition-colors">
+        <User className="size-4" strokeWidth={1.75} />
         <input type="radio" name="role" value="freelancer" className="sr-only" />
         Freelancer
       </label>

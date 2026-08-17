@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { StatusPipeline } from "@/components/status-pipeline";
 import type { Gig } from "@/lib/types";
 import { ClaimGigButton } from "./claim-gig-button";
 
@@ -42,40 +42,37 @@ export default async function GigDetailPage({
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-12">
-      <Card>
-        <CardHeader>
-          <div className="flex items-start justify-between gap-2">
-            <CardTitle className="text-xl">{gig.title}</CardTitle>
-            <Badge variant="secondary" className="capitalize">
-              {gig.status}
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="whitespace-pre-wrap text-sm text-muted-foreground">
-            {gig.description}
-          </p>
-          <div className="text-2xl font-semibold">
-            ${gig.price.toFixed(2)}
-          </div>
+      <StatusPipeline current={gig.status} />
 
+      <div className="mt-6 rounded-md border border-border bg-card p-6">
+        <h1 className="text-xl font-medium leading-snug">{gig.title}</h1>
+
+        <p className="mt-4 whitespace-pre-wrap text-sm text-muted-foreground">
+          {gig.description}
+        </p>
+
+        <div className="mt-6 font-mono text-3xl font-semibold">
+          ${gig.price.toFixed(2)}
+        </div>
+
+        <div className="mt-6 border-t border-dashed border-border pt-6">
           {canClaim && <ClaimGigButton gigId={gig.id} />}
 
           {isClaimedByViewer && gig.status !== "open" && (
             <p className="text-sm text-muted-foreground">
               You claimed this gig. Manage it from your{" "}
-              <a href="/dashboard" className="underline">
+              <Link href="/dashboard" className="underline">
                 dashboard
-              </a>
+              </Link>
               .
             </p>
           )}
 
           {!user && gig.status === "open" && (
             <p className="text-sm text-muted-foreground">
-              <a href="/login" className="underline">
+              <Link href="/login" className="underline">
                 Log in as a freelancer
-              </a>{" "}
+              </Link>{" "}
               to claim this gig.
             </p>
           )}
@@ -85,8 +82,8 @@ export default async function GigDetailPage({
               This gig is no longer open.
             </p>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
