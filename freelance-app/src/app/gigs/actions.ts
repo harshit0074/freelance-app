@@ -59,3 +59,51 @@ export async function createGig(
   revalidatePath("/dashboard");
   redirect("/dashboard");
 }
+
+export async function claimGig(
+  _prevState: GigActionResult,
+  formData: FormData
+): Promise<GigActionResult> {
+  const gigId = formData.get("gigId") as string;
+
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (profile?.role !== "freelancer") {
+    return { error: "Only freelancers can claim gigs." };
+  }
+
+  // The `.eq("status", "open")` guards against a race where two
+  // freelancers click claim at nearly the same time — whoever's
+  // update lands first flips status to "claimed", and the second
+  // update matches zero rows (since status is no longer "open") and fails.
+  const { data, error } = await supabase
+    .from("gigs")
+    .update({ status: "claimed", claimed_by: user.id })
+    .eq("id", gigId)
+    .eq("status", "open")
+    .select()
+    .single();
+
+  if (error || !data) {
+    return { error: "This gig was already claimed by someone else." };
+  }
+
+  revalidatePath(`/gigs/${gigId}`);
+  revalidatePath("/gigs");
+  revalidatePath("/dashboard");
+  redirect("/dashboard");
+}

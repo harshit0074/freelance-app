@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { GigCard } from "@/components/gig-card";
 import type { Gig } from "@/lib/types";
 
@@ -31,7 +31,11 @@ export default async function DashboardPage() {
         .select("*")
         .eq("company_id", user.id)
         .order("created_at", { ascending: false })
-    : { data: [] as Gig[] };
+    : await supabase
+        .from("gigs")
+        .select("*")
+        .eq("claimed_by", user.id)
+        .order("created_at", { ascending: false });
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-12">
@@ -74,20 +78,26 @@ export default async function DashboardPage() {
           )}
         </div>
       ) : (
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle className="text-base">
-              Claimed gigs coming soon
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            The ability to claim gigs is coming in the next phase. For now,{" "}
-            <Link href="/gigs" className="underline">
-              browse open gigs
-            </Link>
-            .
-          </CardContent>
-        </Card>
+        <div className="mt-8">
+          <h2 className="text-lg font-medium">My claimed gigs</h2>
+          {gigs && gigs.length > 0 ? (
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              {(gigs as Gig[]).map((gig) => (
+                <GigCard key={gig.id} gig={gig} href={`/gigs/${gig.id}`} />
+              ))}
+            </div>
+          ) : (
+            <Card className="mt-4">
+              <CardContent className="py-8 text-center text-muted-foreground">
+                You haven&apos;t claimed any gigs yet.{" "}
+                <Link href="/gigs" className="underline">
+                  Browse open gigs
+                </Link>
+                .
+              </CardContent>
+            </Card>
+          )}
+        </div>
       )}
     </div>
   );
