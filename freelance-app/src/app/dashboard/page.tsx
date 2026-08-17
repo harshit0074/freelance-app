@@ -1,7 +1,11 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { GigCard } from "@/components/gig-card";
+import type { Gig } from "@/lib/types";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -19,34 +23,72 @@ export default async function DashboardPage() {
     .eq("id", user.id)
     .single();
 
+  const isCompany = profile?.role === "company";
+
+  const { data: gigs } = isCompany
+    ? await supabase
+        .from("gigs")
+        .select("*")
+        .eq("company_id", user.id)
+        .order("created_at", { ascending: false })
+    : { data: [] as Gig[] };
+
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-12">
-      <h1 className="text-2xl font-semibold">Dashboard</h1>
-      <p className="mt-1 text-muted-foreground">
-        This is a placeholder — gig management is coming in the next phase.
-      </p>
-
-      <Card className="mt-8">
-        <CardHeader>
-          <CardTitle className="text-base">Your account</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm">
-          <div>
-            <span className="text-muted-foreground">Name: </span>
-            {profile?.full_name ?? "—"}
-          </div>
-          <div>
-            <span className="text-muted-foreground">Email: </span>
-            {user.email}
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-muted-foreground">Role: </span>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold">Dashboard</h1>
+          <p className="mt-1 text-muted-foreground">
+            {profile?.full_name ?? user.email} ·{" "}
             <Badge variant="secondary" className="capitalize">
               {profile?.role ?? "unknown"}
             </Badge>
-          </div>
-        </CardContent>
-      </Card>
+          </p>
+        </div>
+        {isCompany && (
+          <Button asChild>
+            <Link href="/gigs/new">Post a gig</Link>
+          </Button>
+        )}
+      </div>
+
+      {isCompany ? (
+        <div className="mt-8">
+          <h2 className="text-lg font-medium">My posted gigs</h2>
+          {gigs && gigs.length > 0 ? (
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              {(gigs as Gig[]).map((gig) => (
+                <GigCard key={gig.id} gig={gig} href={`/gigs/${gig.id}`} />
+              ))}
+            </div>
+          ) : (
+            <Card className="mt-4">
+              <CardContent className="py-8 text-center text-muted-foreground">
+                You haven&apos;t posted any gigs yet.{" "}
+                <Link href="/gigs/new" className="underline">
+                  Post your first one
+                </Link>
+                .
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      ) : (
+        <Card className="mt-8">
+          <CardHeader>
+            <CardTitle className="text-base">
+              Claimed gigs coming soon
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            The ability to claim gigs is coming in the next phase. For now,{" "}
+            <Link href="/gigs" className="underline">
+              browse open gigs
+            </Link>
+            .
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
