@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { GigCard } from "@/components/gig-card";
+import { DashboardGigCard } from "@/components/dashboard-gig-card";
 import type { Gig } from "@/lib/types";
 
 export default async function DashboardPage() {
@@ -37,6 +37,17 @@ export default async function DashboardPage() {
         .eq("claimed_by", user.id)
         .order("created_at", { ascending: false });
 
+  const gigList = (gigs ?? []) as Gig[];
+
+  // Total earnings mirrors gig.price for any gig marked 'paid' — the
+  // payments table backs this for record-keeping, but summing the
+  // gigs we already fetched avoids an extra database round trip.
+  const totalEarnings = !isCompany
+    ? gigList
+        .filter((g) => g.status === "paid")
+        .reduce((sum, g) => sum + g.price, 0)
+    : 0;
+
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-12">
       <div className="flex items-start justify-between gap-4">
@@ -56,13 +67,26 @@ export default async function DashboardPage() {
         )}
       </div>
 
+      {!isCompany && (
+        <Card className="mt-6">
+          <CardContent className="flex items-center justify-between py-4">
+            <span className="text-sm text-muted-foreground">
+              Total earnings
+            </span>
+            <span className="text-xl font-semibold">
+              ${totalEarnings.toFixed(2)}
+            </span>
+          </CardContent>
+        </Card>
+      )}
+
       {isCompany ? (
         <div className="mt-8">
           <h2 className="text-lg font-medium">My posted gigs</h2>
-          {gigs && gigs.length > 0 ? (
+          {gigList.length > 0 ? (
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              {(gigs as Gig[]).map((gig) => (
-                <GigCard key={gig.id} gig={gig} href={`/gigs/${gig.id}`} />
+              {gigList.map((gig) => (
+                <DashboardGigCard key={gig.id} gig={gig} viewerRole="company" />
               ))}
             </div>
           ) : (
@@ -80,10 +104,14 @@ export default async function DashboardPage() {
       ) : (
         <div className="mt-8">
           <h2 className="text-lg font-medium">My claimed gigs</h2>
-          {gigs && gigs.length > 0 ? (
+          {gigList.length > 0 ? (
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              {(gigs as Gig[]).map((gig) => (
-                <GigCard key={gig.id} gig={gig} href={`/gigs/${gig.id}`} />
+              {gigList.map((gig) => (
+                <DashboardGigCard
+                  key={gig.id}
+                  gig={gig}
+                  viewerRole="freelancer"
+                />
               ))}
             </div>
           ) : (

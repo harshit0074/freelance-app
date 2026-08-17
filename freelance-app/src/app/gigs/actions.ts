@@ -107,3 +107,116 @@ export async function claimGig(
   revalidatePath("/dashboard");
   redirect("/dashboard");
 }
+
+export async function submitGig(
+  _prevState: GigActionResult,
+  formData: FormData
+): Promise<GigActionResult> {
+  const gigId = formData.get("gigId") as string;
+
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const { data, error } = await supabase
+    .from("gigs")
+    .update({ status: "submitted" })
+    .eq("id", gigId)
+    .eq("claimed_by", user.id)
+    .eq("status", "claimed")
+    .select()
+    .single();
+
+  if (error || !data) {
+    return { error: "Couldn't submit this gig. Please refresh and try again." };
+  }
+
+  revalidatePath("/dashboard");
+  redirect("/dashboard");
+}
+
+export async function approveGig(
+  _prevState: GigActionResult,
+  formData: FormData
+): Promise<GigActionResult> {
+  const gigId = formData.get("gigId") as string;
+
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const { data, error } = await supabase
+    .from("gigs")
+    .update({ status: "approved" })
+    .eq("id", gigId)
+    .eq("company_id", user.id)
+    .eq("status", "submitted")
+    .select()
+    .single();
+
+  if (error || !data) {
+    return { error: "Couldn't approve this gig. Please refresh and try again." };
+  }
+
+  revalidatePath("/dashboard");
+  redirect("/dashboard");
+}
+
+export async function markPaid(
+  _prevState: GigActionResult,
+  formData: FormData
+): Promise<GigActionResult> {
+  const gigId = formData.get("gigId") as string;
+
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  // Mark the payment record as paid first...
+  const { data: payment, error: paymentError } = await supabase
+    .from("payments")
+    .update({ status: "paid", paid_at: new Date().toISOString() })
+    .eq("gig_id", gigId)
+    .eq("status", "pending")
+    .select()
+    .single();
+
+  if (paymentError || !payment) {
+    return { error: "Couldn't find a pending payment for this gig." };
+  }
+
+  // ...then flip the gig itself to 'paid' so it's reflected everywhere.
+  const { data: gig, error: gigError } = await supabase
+    .from("gigs")
+    .update({ status: "paid" })
+    .eq("id", gigId)
+    .eq("company_id", user.id)
+    .eq("status", "approved")
+    .select()
+    .single();
+
+  if (gigError || !gig) {
+    return { error: "Payment recorded, but couldn't update the gig status." };
+  }
+
+  revalidatePath("/dashboard");
+  redirect("/dashboard");
+}
