@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState } from "react";
 import Link from "next/link";
 import { Building2, User } from "lucide-react";
 import { signup, type AuthResult } from "@/app/auth/actions";
@@ -16,14 +16,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-type Role = "company" | "freelancer";
-
 export default function SignupPage() {
   const [state, formAction] = useActionState<AuthResult, FormData>(
     signup,
     undefined
   );
-  const [role, setRole] = useState<Role>("company");
 
   return (
     <div className="flex flex-1 items-center justify-center px-4 py-16">
@@ -31,14 +28,14 @@ export default function SignupPage() {
         <CardHeader>
           <CardTitle>Create an account</CardTitle>
           <CardDescription>
-            Sign up as a company to post work, or a freelancer to apply for it.
+            Sign up as a company to post work, or a freelancer to pick it up.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form action={formAction} className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
               <Label>I am a...</Label>
-              <RoleSelector role={role} onChange={setRole} />
+              <RoleSelector />
             </div>
 
             <div className="flex flex-col gap-2">
@@ -57,24 +54,9 @@ export default function SignupPage() {
                 id="email"
                 name="email"
                 type="email"
-                placeholder={
-                  role === "freelancer"
-                    ? "you@thapar.edu"
-                    : "you@yourcompany.com"
-                }
-                pattern={role === "freelancer" ? ".+@thapar\\.edu$" : undefined}
-                title={
-                  role === "freelancer"
-                    ? "Freelancer accounts must use a thapar.edu email address."
-                    : undefined
-                }
+                placeholder="you@example.com"
                 required
               />
-              {role === "freelancer" && (
-                <p className="text-xs text-muted-foreground">
-                  Freelancer accounts require a thapar.edu email address.
-                </p>
-              )}
             </div>
 
             <div className="flex flex-col gap-2">
@@ -110,13 +92,7 @@ export default function SignupPage() {
   );
 }
 
-function RoleSelector({
-  role,
-  onChange,
-}: {
-  role: Role;
-  onChange: (role: Role) => void;
-}) {
+function RoleSelector() {
   return (
     <div className="grid grid-cols-2 gap-2">
       <label className="has-[:checked]:border-primary has-[:checked]:bg-secondary flex cursor-pointer flex-col items-center gap-1.5 rounded-md border border-border p-3 text-sm font-medium transition-colors">
@@ -125,22 +101,14 @@ function RoleSelector({
           type="radio"
           name="role"
           value="company"
-          checked={role === "company"}
-          onChange={() => onChange("company")}
+          defaultChecked
           className="sr-only"
         />
         Company
       </label>
       <label className="has-[:checked]:border-primary has-[:checked]:bg-secondary flex cursor-pointer flex-col items-center gap-1.5 rounded-md border border-border p-3 text-sm font-medium transition-colors">
         <User className="size-4" strokeWidth={1.75} />
-        <input
-          type="radio"
-          name="role"
-          value="freelancer"
-          checked={role === "freelancer"}
-          onChange={() => onChange("freelancer")}
-          className="sr-only"
-        />
+        <input type="radio" name="role" value="freelancer" className="sr-only" />
         Freelancer
       </label>
     </div>
