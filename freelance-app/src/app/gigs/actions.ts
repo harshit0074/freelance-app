@@ -13,10 +13,17 @@ export async function createGig(
   const title = formData.get("title") as string;
   const description = formData.get("description") as string;
   const priceRaw = formData.get("price") as string;
+  const category = (formData.get("category") as string) || "General";
+  const skillsRaw = (formData.get("skillsRequired") as string) || "";
   const price = Number(priceRaw);
 
+  const skillsRequired = skillsRaw
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
   if (!title || !description || !priceRaw) {
-    return { error: "Please fill in all fields." };
+    return { error: "Please fill in all required fields." };
   }
   if (Number.isNaN(price) || price <= 0) {
     return { error: "Price must be a positive number." };
@@ -32,9 +39,6 @@ export async function createGig(
     redirect("/login");
   }
 
-  // Double-check the signed-in user is actually a company.
-  // (The page itself also checks this, but we re-verify here since
-  // server actions can technically be called directly.)
   const { data: profile } = await supabase
     .from("profiles")
     .select("role")
@@ -50,6 +54,8 @@ export async function createGig(
     title,
     description,
     price,
+    category,
+    skills_required: skillsRequired,
   });
 
   if (error) {
@@ -57,6 +63,7 @@ export async function createGig(
   }
 
   revalidatePath("/dashboard");
+  revalidatePath("/gigs");
   redirect("/dashboard");
 }
 
@@ -86,10 +93,6 @@ export async function claimGig(
     return { error: "Only freelancers can claim gigs." };
   }
 
-  // The `.eq("status", "open")` guards against a race where two
-  // freelancers click claim at nearly the same time — whoever's
-  // update lands first flips status to "claimed", and the second
-  // update matches zero rows (since status is no longer "open") and fails.
   const { data, error } = await supabase
     .from("gigs")
     .update({ status: "claimed", claimed_by: user.id })
@@ -113,6 +116,8 @@ export async function submitGig(
   formData: FormData
 ): Promise<GigActionResult> {
   const gigId = formData.get("gigId") as string;
+  const submissionUrl = (formData.get("submissionUrl") as string)?.trim() || null;
+  const submissionNotes = (formData.get("submissionNotes") as string)?.trim() || null;
 
   const supabase = await createClient();
 
@@ -126,7 +131,11 @@ export async function submitGig(
 
   const { data, error } = await supabase
     .from("gigs")
-    .update({ status: "submitted" })
+    .update({
+      status: "submitted",
+      submission_url: submissionUrl,
+      submission_notes: submissionNotes,
+    })
     .eq("id", gigId)
     .eq("claimed_by", user.id)
     .eq("status", "claimed")
@@ -138,6 +147,7 @@ export async function submitGig(
   }
 
   revalidatePath("/dashboard");
+  revalidatePath(`/gigs/${gigId}`);
   redirect("/dashboard");
 }
 
@@ -159,7 +169,10 @@ export async function approveGig(
 
   const { data, error } = await supabase
     .from("gigs")
-    .update({ status: "approved" })
+    .update({
+      status: "approved",
+      approved_at: new Date().toISOString(),
+    })
     .eq("id", gigId)
     .eq("company_id", user.id)
     .eq("status", "submitted")
@@ -171,6 +184,7 @@ export async function approveGig(
   }
 
   revalidatePath("/dashboard");
+  revalidatePath(`/gigs/${gigId}`);
   redirect("/dashboard");
 }
 
@@ -218,5 +232,6 @@ export async function markPaid(
   }
 
   revalidatePath("/dashboard");
+  revalidatePath(`/gigs/${gigId}`);
   redirect("/dashboard");
 }
