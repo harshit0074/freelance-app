@@ -2,10 +2,10 @@
 
 import { useActionState } from "react";
 import Link from "next/link";
-import { login, type AuthResult } from "@/app/auth/actions";
-import { Button } from "@/components/ui/button";
+import { requestPasswordReset, type AuthResult } from "@/app/auth/actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { SubmitButton } from "@/components/submit-button";
 import {
   Card,
@@ -15,9 +15,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export default function LoginPage() {
+export default function ForgotPasswordPage() {
   const [state, formAction] = useActionState<AuthResult, FormData>(
-    login,
+    requestPasswordReset,
     undefined
   );
 
@@ -25,8 +25,10 @@ export default function LoginPage() {
     <div className="flex flex-1 items-center justify-center px-4 py-16">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle>Log in</CardTitle>
-          <CardDescription>Welcome back.</CardDescription>
+          <CardTitle>Reset your password</CardTitle>
+          <CardDescription>
+            Enter your email and we&apos;ll send you a reset link.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form action={formAction} className="flex flex-col gap-4">
@@ -41,36 +43,21 @@ export default function LoginPage() {
               />
             </div>
 
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
-                <Link
-                  href="/forgot-password"
-                  className="text-xs text-muted-foreground underline"
-                >
-                  Forgot password?
-                </Link>
-              </div>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                placeholder="Your password"
-                required
-              />
-            </div>
-
             {state?.error && (
               <p className="text-sm text-destructive">{state.error}</p>
             )}
+            {state?.message && (
+              <p className="text-sm text-muted-foreground">{state.message}</p>
+            )}
 
-            <SubmitButton pendingText="Logging in..." className="w-full">Log in</SubmitButton>
+            <SubmitButton pendingText="Sending..." className="w-full">
+              Send reset link
+            </SubmitButton>
           </form>
 
           <p className="mt-4 text-center text-sm text-muted-foreground">
-            Don&apos;t have an account?{" "}
             <Button variant="link" asChild className="h-auto p-0">
-              <Link href="/signup">Sign up</Link>
+              <Link href="/login">Back to log in</Link>
             </Button>
           </p>
         </CardContent>
